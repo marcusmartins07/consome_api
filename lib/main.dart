@@ -44,9 +44,10 @@ class _CatFactsPageState extends State<CatFactsPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final fato = data['data'][0];
+        final fatoEmIngles = data['data'][0];
+        final fatoTraduzido = await _traduzir(fatoEmIngles);
         setState(() {
-          _curiosidade = fato;
+          _curiosidade = fatoTraduzido;
         });
       } else {
         setState(() {
@@ -64,11 +65,30 @@ class _CatFactsPageState extends State<CatFactsPage> {
     }
   }
 
+  // Traduz o texto em inglês para português usando a API gratuita MyMemory
+  Future<String> _traduzir(String texto) async {
+    try {
+      final url = Uri.parse(
+        'https://api.mymemory.translated.net/get?q=${Uri.encodeComponent(texto)}&langpair=en|pt-BR',
+      );
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final traducao = data['responseData']['translatedText'];
+        return traducao;
+      }
+      return texto; // Se falhar, retorna o original em inglês
+    } catch (e) {
+      return texto; // Se falhar, retorna o original em inglês
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Curiosidades de Gatos'),
+        title: const Text('Curiosidades de Gatos 🐱'),
         centerTitle: true,
       ),
       body: Center(
